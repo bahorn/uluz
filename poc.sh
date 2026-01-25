@@ -46,9 +46,9 @@ cat ./lib/libfoo.so > $EGG
 #process = subprocess.Popen(['env'], shell=False, env = myenv)
 #__FUN__
 # LD_PRELOAD=/tmp/egg cat /proc/self/maps
-# LD_PRELOAD=/tmp/egg tail -f /dev/null
+LD_PRELOAD=/tmp/egg tail -f /dev/null
 
-strace -E LD_PRELOAD=/tmp/egg tail -f /dev/null
+# strace -E LD_PRELOAD=/tmp/egg tail -f /dev/null
 # gdb -ex "set environment LD_PRELOAD /tmp/egg" -ex "r" /bin/ls
 
 # # openssl
