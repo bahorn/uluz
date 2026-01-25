@@ -21,7 +21,7 @@ extern char **environ;
 
 void *alloc_from_file(unsigned int s)
 {
-    unsigned int ps = PAGE_ROUND_UP(payload_bin_len)*100000;
+    unsigned int ps = PAGE_ROUND_UP(payload_bin_len)*1000;
     int fd = open(BIN_FOR_MAPPING, O_RDONLY);
     void *payload = mmap(
             0,
