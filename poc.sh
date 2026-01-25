@@ -17,7 +17,7 @@ sleep 0.5
 # EGG=`find /proc -maxdepth 4 -lname \*egg\* 2>/dev/null`
 EGG=/tmp/egg
 
-# dump what we want into the menfd
+# dump what we want into the memfd
 # maybe curl it, extract from log files, etc
 cat ./lib/libfoo.so > $EGG
 
