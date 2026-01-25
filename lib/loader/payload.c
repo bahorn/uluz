@@ -143,7 +143,7 @@ int main()
 }
 
 
-__attribute__ ((section(".text.start")))
+__attribute__ ((constructor))
 void _start()
 {
     main();

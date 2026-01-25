@@ -1,4 +1,5 @@
 CFLAGS=-O0 \
+	   -static \
 	   -fPIE \
 	   -fno-builtin \
 	   -nostdlib \
