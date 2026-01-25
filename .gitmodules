@@ -1,0 +1,3 @@
+[submodule "lib/loader/include/nolibc"]
+	path = lib/loader/include/nolibc
+	url = https://github.com/bahorn/nolibc.git
