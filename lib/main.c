@@ -4,9 +4,10 @@
 #include <linux/prctl.h>
 #include <sys/prctl.h>
 #include <fcntl.h>
-#include <linux/elf.h>
+#include <elf.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include "loader/payload.h"
 
 
@@ -62,6 +63,73 @@ size_t get_virtualsize(void *elf)
 }
 
 
+bool do_relocs(void *elf)
+{
+    Elf64_Dyn *dyn = NULL;
+    int dynamic_tags = 0;
+    Elf64_Ehdr *ehdr = (Elf64_Ehdr *) elf;
+    for (uint16_t curr_ph = 0; curr_ph < ehdr->e_phnum; curr_ph++) {
+        Elf64_Phdr *phdr = elf + ehdr->e_phoff  + curr_ph * ehdr->e_phentsize;
+        if (phdr->p_type != PT_DYNAMIC) continue;
+        dyn = elf + phdr->p_offset;
+        dynamic_tags = phdr->p_filesz / sizeof(Elf64_Dyn); 
+        break;
+    }
+    if (dyn == NULL) return true;
+    /* Now we iterate through .dynamic looking for strtab, symtab, rela */
+    Elf64_Rela *rela = NULL;
+    Elf64_Sym *symtab = NULL;
+    char *strtab = NULL;
+    uint64_t relasz = 0;
+    for (int i = 0; i < dynamic_tags; i++) {
+        Elf64_Dyn *tag = &dyn[i];
+        switch (tag->d_tag) {
+            case DT_NULL:
+                goto dt_end;
+
+            case DT_RELA:
+                rela = elf + tag->d_un.d_val;
+                break;
+
+            case DT_RELASZ:
+                relasz = (uint64_t)tag->d_un.d_val;
+                break;
+
+            case DT_STRTAB:
+                strtab = elf + tag->d_un.d_val;
+                break;
+
+            case DT_SYMTAB:
+                symtab = elf + tag->d_un.d_val;
+                break;
+        }
+    }
+dt_end:
+    if (rela == NULL || symtab == NULL || strtab == NULL)
+        return false;
+
+    relasz /= sizeof(Elf64_Rela);
+    /* Now we iterate through the RELA */
+    for (int i = 0; i < relasz; i++) {
+        unsigned long *to_patch;
+
+        switch (ELF64_R_TYPE(rela[i].r_info)) {
+            case R_X86_64_RELATIVE:
+                printf("relative relocation: %li\n", rela[i].r_addend);
+                to_patch = \
+                    (unsigned long *)(elf + rela[i].r_offset);
+                *to_patch = (unsigned long)elf + rela[i].r_addend;
+                break;
+            default:
+                printf("unknown relocation?\n");
+                return false;
+        }
+    }
+
+    return true;
+}
+
+
 /* process */
 void *load_elf(void *elf, size_t len)
 {
@@ -77,6 +145,12 @@ void *load_elf(void *elf, size_t len)
     memset(body, 0, size);
     memcpy(body, elf, len);
     Elf64_Ehdr *ehdr = (Elf64_Ehdr *) body;
+
+    /* Apply the relocations by searching through the PHDRs for a PT_DYNAMIC */
+    if (!do_relocs(body)) {
+        return NULL;
+    }
+
     /* Go through the program headers to set correct page permissions for each
      * PT_LOAD */
     for (uint16_t curr_ph = 0; curr_ph < ehdr->e_phnum; curr_ph++) {
@@ -101,6 +175,15 @@ void *load_elf(void *elf, size_t len)
                     body + phdr->p_vaddr,
                     size * PAGE_SIZE,
                     PROT_READ | PROT_EXEC
+                );
+                break;
+
+            case PF_R:
+                /* Set RO, then make it executable */
+                mprotect(
+                    body + phdr->p_vaddr,
+                    size * PAGE_SIZE,
+                    PROT_READ
                 );
                 break;
 
@@ -134,6 +217,7 @@ void __attribute__((constructor)) setupfun()
 {
     clean_environ();
     void *payload = load_elf(payload_bin, payload_bin_len);
+    if (payload == NULL) return;
     // we have to jump because we want to unload this .so, and we need to call
     // this from the first function called in the .so, so we return back to the
     // main program.
