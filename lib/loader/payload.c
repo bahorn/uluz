@@ -10,8 +10,6 @@
 
 #define EGG_NAME "/memfd:egg"
 
-extern char *strtok(char* str, const char* delim);
-
 void remove_mappings(void)
 {
     FILE *file;
@@ -65,7 +63,6 @@ void remove_mappings(void)
     fclose(file);
 }
 
-
 static void dothis(int signum) {
     write(1, "h", 1);
     alarm(5);
@@ -81,7 +78,7 @@ int payload()
     sigemptyset(&psa.sa_mask);
 
     sigaction(SIGALRM, &psa, NULL);
-    alarm(10);
+    alarm(1);
     return 0;
 }
 

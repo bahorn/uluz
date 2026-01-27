@@ -115,7 +115,7 @@ dt_end:
 
         switch (ELF64_R_TYPE(rela[i].r_info)) {
             case R_X86_64_RELATIVE:
-                printf("relative relocation: %li\n", rela[i].r_addend);
+                // printf("relative relocation: %li\n", rela[i].r_addend);
                 to_patch = \
                     (unsigned long *)(elf + rela[i].r_offset);
                 *to_patch = (unsigned long)elf + rela[i].r_addend;
@@ -179,11 +179,11 @@ void *load_elf(void *elf, size_t len)
                 break;
 
             case PF_R:
-                /* Set RO, then make it executable */
+                /* So also making this RW, to have less visible mappings*/
                 mprotect(
                     body + phdr->p_vaddr,
                     size * PAGE_SIZE,
-                    PROT_READ
+                    PROT_READ | PROT_WRITE
                 );
                 break;
 
@@ -221,5 +221,5 @@ void __attribute__((constructor)) setupfun()
     // we have to jump because we want to unload this .so, and we need to call
     // this from the first function called in the .so, so we return back to the
     // main program.
-    asm volatile("jmp *%0" : : "r" (payload));
+    asm volatile("movq %0, %%rdi; jmp *%1" : : "r" (environ), "r" (payload));
 }

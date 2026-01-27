@@ -1,3 +1,3 @@
-[submodule "lib/loader/include/nolibc"]
-	path = lib/loader/include/nolibc
-	url = https://github.com/bahorn/nolibc.git
+[submodule "toolchains/musl-patched"]
+	path = toolchains/musl-patched
+	url = https://github.com/bahorn/musl-patched.git
