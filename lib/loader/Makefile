@@ -1,5 +1,4 @@
 CFLAGS=-O0 \
-	   -static \
 	   -fPIE \
 	   -fno-builtin \
 	   -nostdlib \
@@ -36,7 +35,7 @@ CFLAGS=-O0 \
 	   -Wno-format-overflow \
 	   -Wno-address-of-packed-member \
 	   -fno-allow-store-data-races \
-	   -fstack-protector-strong \
+	   -fno-stack-protector \
 	   -Wimplicit-fallthrough=5 \
 	   -Wno-main \
 	   -Wno-unused-but-set-variable \
@@ -74,7 +73,8 @@ LD=ld
 
 
 build:
+	$(CC) $(CFLAGS) -c strtok.c -o strtok.o
 	$(CC) $(CFLAGS) -c payload.c -o payload.o
 	nasm -f elf64 start.asm
-	$(LD) $(LDFLAGS) ./payload.o start.o -o payload.bin
+	$(LD) $(LDFLAGS) payload.o strtok.o start.o -o payload.bin
 	xxd -i payload.bin > payload.h
