@@ -1,9 +1,4 @@
 CFLAGS=-O0 \
-	   -fPIE \
-	   -fno-builtin \
-	   -nostdlib \
-	   -nolibc \
-	   -nostdinc \
 	   -Wundef \
 	   -Wno-trigraphs \
 	   -fno-strict-aliasing \
@@ -17,11 +12,11 @@ CFLAGS=-O0 \
 	   -mno-3dnow \
 	   -mno-avx \
 	   -m64 \
+	   -fno-plt \
 	   -falign-jumps=1 \
 	   -falign-loops=1 \
 	   -mno-80387 \
 	   -mno-fp-ret-in-387 \
-	   -mpreferred-stack-boundary=3 \
 	   -mskip-rax-setup \
 	   -mtune=generic \
 	   -mno-red-zone \
@@ -63,18 +58,18 @@ CFLAGS=-O0 \
 	   -Werror=designated-init \
 	   -Wno-packed-not-aligned \
 	   -D_NOLIBC_STACKPROTECTOR_H \
-	   -I ./include/nolibc \
-	   -I /usr/include
+	   -lc \
+	   -Wl,-T,./linker.lds -Wl,-z,noexecstack \
+	   -fno-zero-initialized-in-bss \
+	   -mstackrealign \
+	   -mgeneral-regs-only
 ASFLAGS=-64
-LDFLAGS=-T ./linker.lds -pie -static -z noexecstack
 
-CC=gcc
+CC=../../toolchains/musl-patched/build/bin/musl-gcc
 LD=ld
 
 
 build:
-	$(CC) $(CFLAGS) -c strtok.c -o strtok.o
-	$(CC) $(CFLAGS) -c payload.c -o payload.o
 	nasm -f elf64 start.asm
-	$(LD) $(LDFLAGS) payload.o strtok.o start.o -o payload.bin
+	$(CC) $(CFLAGS) -static-pie payload.c start.o -o payload.bin
 	xxd -i payload.bin > payload.h

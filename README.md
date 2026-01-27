@@ -13,9 +13,8 @@ A bag of tricks to load a payload into memory without touching disks.
 
 ## Example
 
-Build the .so with `make`, make sure you have submodules initialized because
-this uses a patched version of nolibc to remove the C runtime and add support
-for alarm() and `sigaction().
+First run `make setup` to setup the patched musl build, then run `make` to
+build the .so.
 
 Then do something like this, starting a HTTP server from `./lib`, so load it:
 ```
