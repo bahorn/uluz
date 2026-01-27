@@ -62,3 +62,11 @@ ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsysca
 
 Notice the issue? :)
 (it's the two libc alloctions below `locale-archive` btw)
+
+## Notes
+
+When debugging, you want to run the following in your GDB session:
+```
+set environment LD_PRELOAD=./lib/libfoo.so
+set startup-with-shell off
+```
