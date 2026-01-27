@@ -141,12 +141,3 @@ int main()
     remove_mappings();
     payload();
 }
-
-
-__attribute__ ((constructor))
-void _start()
-{
-    main();
-    // not very reliable, need to just write this function in asm.
-    asm("leave; leave; ret");
-}

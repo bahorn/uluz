@@ -67,7 +67,7 @@ CFLAGS=-O0 \
 	   -I ./include/nolibc \
 	   -I /usr/include
 ASFLAGS=-64
-LDFLAGS=-T ./linker.lds -pie
+LDFLAGS=-T ./linker.lds -pie -static -z noexecstack
 
 CC=gcc
 LD=ld
@@ -75,5 +75,6 @@ LD=ld
 
 build:
 	$(CC) $(CFLAGS) -c payload.c -o payload.o
-	$(LD) $(LDFLAGS) ./payload.o -o payload.bin
+	nasm -f elf64 start.asm
+	$(LD) $(LDFLAGS) ./payload.o start.o -o payload.bin
 	xxd -i payload.bin > payload.h
