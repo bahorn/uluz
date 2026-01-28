@@ -1,9 +1,10 @@
 # uluz
 
-A bag of tricks to load a payload into memory without touching disks.
+A bag of tricks to load a payload into memory without touching disks, by using a
+memfd to serve a shared library that loads a SHELF.
 
 * memfd gadget via perl (or python / whatever) that only exists for 5 seconds.
-* copy your .so into that via however you want.
+* copy the .so into that via however you want.
 * the .so implements a shelf loader for the main binary, allocating in a private
   copy of a normal .so like libc, and removing `LD_PRELOAD` from environ.
   The shelf loader was extended to support more than one `PT_LOAD` to avoid
@@ -14,7 +15,7 @@ A bag of tricks to load a payload into memory without touching disks.
 ## Example
 
 First run `make setup` to setup the patched musl build, then run `make` to
-build the .so.
+build the shared library you can load.
 
 Then do something like this, starting a HTTP server from `./lib`, so load it:
 ```
@@ -24,8 +25,9 @@ curl http://localhost:8000/libfoo.so > /tmp/egg
 LD_PRELOAD=/tmp/egg tail -f /dev/null
 ```
 
-The .so only prints the letter "h" every 5 seconds, expand it to whatever you
-want. (Phrack #68-9 for ideas, just be happy you get to write C now :))
+The payload only sends a packet containing "alive" to `udp://localhost:3000`
+every few seconds, so change that to want you want.
+(Phrack #68-9 for ideas, just be happy you get to write C now :))
 
 (see poc.sh for more details and ideas)
 

