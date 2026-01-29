@@ -2,4 +2,4 @@
 *.o
 *.so
 /old
-/lib/loader/payload.h
+/payload/payload.h

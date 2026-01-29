@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include "loader/payload.h"
+#include "../payload/payload.h"
 
 
 #define BIN_FOR_MAPPING "/usr/lib/x86_64-linux-gnu/libc.so.6"

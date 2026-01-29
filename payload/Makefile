@@ -65,7 +65,7 @@ CFLAGS=-O0 \
 	   -mgeneral-regs-only
 ASFLAGS=-64
 
-CC=../../toolchains/musl-patched/build/bin/musl-gcc
+CC=../toolchains/musl-patched/build/bin/musl-gcc
 LD=ld
 
 

@@ -71,3 +71,16 @@ When debugging, you want to run the following in your GDB session:
 set environment LD_PRELOAD=./lib/libfoo.so
 set startup-with-shell off
 ```
+
+## Structure
+
+* `lib` - contains a shared library that implements a SHELF loader and removes
+  `LD_PRELOAD` from the environment (not a clean approach! leaves null bytes in
+  environ you can detect).
+* `payload` - A SHELF that removes mappings with the name "/memfd:egg" and the
+  setups up an signal handler for SIGALRM that sends a UDP packet to
+  localhost:3000, and makes this run every few seconds.
+  The SHELF does its own setup of musl which maybe interesting, and using a
+  custom build of musl that removes thread local storage.
+* `poc.sh` - just a sample script to run everything. Has some interesting notes
+  if you care about some more details.
