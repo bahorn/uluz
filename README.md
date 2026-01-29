@@ -84,3 +84,9 @@ set startup-with-shell off
   custom build of musl that removes thread local storage.
 * `poc.sh` - just a sample script to run everything. Has some interesting notes
   if you care about some more details.
+* `preload-via-mntns.sh` - a script that uses a mount namespace to overwrite
+  /etc/ld.so.preload and run a dynamically linked binary, so you don't have to
+  set `LD_PRELOAD` directly. Meant as an alternative way of doing process
+  injection.
+  You may have to run this like `busybox sh ./preload-via-mntns.sh` if unpriv'd
+  namespaces are disabled (a known public bypass for Ubuntu 24.04).
